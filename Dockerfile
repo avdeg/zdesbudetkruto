@@ -1,15 +1,14 @@
 FROM n8nio/n8n:latest
 
+# n8n:latest у тебя сейчас на Alpine, поэтому используем apk
 USER root
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends ffmpeg curl \
-  && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache ffmpeg curl bash
 
-# Автоматически подставляем $PORT от Railway
+# Подхватываем порт от Railway, если он задан
 RUN printf '%s\n' \
-  '#!/usr/bin/env bash' \
+  '#!/usr/bin/env sh' \
   'set -e' \
-  'if [ -n "$PORT" ]; then export N8N_PORT="$PORT"; fi' \
+  '[ -n "$PORT" ] && export N8N_PORT="$PORT"' \
   'echo "Using N8N_PORT=${N8N_PORT:-5678}"' \
   > /docker-entrypoint-init.d/10-set-port.sh \
   && chmod +x /docker-entrypoint-init.d/10-set-port.sh
